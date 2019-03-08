@@ -24,6 +24,7 @@ let SlackBot = require('slackbots');
 
 let userName = localStorage.getItem('userName');
 
+
 console.log('User Name');
 console.log(userName);
 // create a bot
@@ -32,7 +33,6 @@ let bot = new SlackBot({
   name: 'Slouchless Bot'
 });
 
-
 // bot.on('start', function() {
 //   // more information about additional params https://api.slack.com/methods/chat.postMessage
   const params = {
@@ -40,7 +40,7 @@ let bot = new SlackBot({
   };
 
   console.log('emoji');
-  console.log(params);
+  console.log(bot);
 //
 //   // define channel, where bot exist. You can adjust it there https://my.slack.com/services
 //   bot.postMessageToChannel('general', 'meow!', params);
