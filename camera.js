@@ -36,7 +36,7 @@ let bot = new SlackBot({
 // bot.on('start', function() {
 //   // more information about additional params https://api.slack.com/methods/chat.postMessage
   const params = {
-    icon_emoji: ':bondhusocute:'
+    icon_emoji: ':bow:'
   };
 
   console.log('emoji');
