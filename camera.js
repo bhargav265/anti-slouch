@@ -33,14 +33,13 @@ let bot = new SlackBot({
   name: 'Slouchless Bot'
 });
 
-// bot.on('start', function() {
 //   // more information about additional params https://api.slack.com/methods/chat.postMessage
   const params = {
     icon_emoji: ':bow:'
   };
 
-  console.log('emoji');
-  console.log(bot);
+  // console.log('emoji');
+  // console.log(bot);
 //
 //   // define channel, where bot exist. You can adjust it there https://my.slack.com/services
 //   bot.postMessageToChannel('general', 'meow!', params);
@@ -55,7 +54,6 @@ let bot = new SlackBot({
 //   // define private group instead of 'private_group', where bot exist
 //   bot.postMessageToGroup('private_group', 'meow!', params);
 // });
-
 
 const videoWidth = 600;
 const videoHeight = 500;
@@ -345,16 +343,25 @@ function detectPoseInRealTime(video, net) {
             runningSum.shift();
           }
 
+          let element = document.querySelector('#is-slouching');
+
           if (isSlouching) {
             countTrue++;
+            element.textContent = 'slouching';
+            element.classList.add('is-slouching');
+
           } else {
             countFalse++;
+            element.textContent = 'not slouching';
+            element.classList.remove('is-slouching');
           }
 
           runningSum.push(isSlouching);
 
           if (countTrue > timeThreshold) {
             console.log('STOP SLOUCHING');
+            // localStorage.setItem('isSlouching', isSlouching
+            // document.querySelector('#id').text('is slouching')
             bot.postMessageToUser(userName, 'Stop slouching my friend!', params);
 
             countFalse = 0;

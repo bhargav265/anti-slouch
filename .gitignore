@@ -1,1 +1,4 @@
-.cache/
+posenet/demos/.cache/
+posenet/demos/node_modules/
+posenet/demos/dist
+node_modules
