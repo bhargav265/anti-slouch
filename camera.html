@@ -2,8 +2,15 @@
 <html>
 
 <head>
-    <title>PoseNet - Camera Feed Demo</title>
+    <title>camera</title>
     <style>
+    #is-slouching {
+        color: green;
+    }
+    #is-slouching.is-slouching {
+        color: red;
+    }
+
     .footer {
         position: fixed;
         left: 0;
@@ -25,6 +32,9 @@
     }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        let isSlouching = localStorage.getItem('userName');
+    </script>
 </head>
 
 <body>
@@ -33,7 +43,10 @@
     <div id="loading">
         Loading the model...
     </div>
-
+    <h1>HackDay - Slouchless</h1>
+    <br />
+    <br />
+    <br />
     <div id='main' style='display:none'>
         <video id="video" playsinline style=" -moz-transform: scaleX(-1);
         -o-transform: scaleX(-1);
@@ -44,6 +57,7 @@
         </video>
         <canvas id="output" />
     </div>
+    <div id="is-slouching"></div>
     <div class="footer">
         <div class="footer-text">
             <p>
