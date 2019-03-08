@@ -36,7 +36,7 @@ let bot = new SlackBot({
 // bot.on('start', function() {
 //   // more information about additional params https://api.slack.com/methods/chat.postMessage
   const params = {
-    icon_emoji: ':bondhusocute:'
+    icon_emoji: ':bow:'
   };
 
   console.log('emoji');
@@ -344,11 +344,16 @@ function detectPoseInRealTime(video, net) {
             }
             runningSum.shift();
           }
+          let element = document.querySelector('#is-slouching');
 
           if (isSlouching) {
             countTrue++;
+            element.textContent = 'slouching';
+            element.classList.add('is-slouching');
           } else {
             countFalse++;
+            element.textContent = 'not slouching';
+            element.classList.remove('is-slouching');
           }
 
           runningSum.push(isSlouching);
