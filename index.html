@@ -1,0 +1,34 @@
+<html>
+<body>
+<!-- Load TensorFlow.js -->
+<script src="https://unpkg.com/@tensorflow/tfjs"></script>
+<!-- Load Posenet -->
+<script src="https://unpkg.com/@tensorflow-models/posenet">
+</script>
+<script type="text/javascript">
+
+    const imageScaleFactor = 0.5;
+    const outputStride = 16;
+    const flipHorizontal = false;
+    const maxPoseDetections = 2;
+
+    async function estimateMultiplePosesOnImage(imageElement) {
+        const net = await posenet.load();
+
+        // estimate poses
+        const poses = await net.estimateMultiplePoses(imageElement,
+            imageScaleFactor, flipHorizontal, outputStride, maxPoseDetections);
+
+        return poses;
+    }
+
+    const imageElement = document.getElementById('human1.png');
+
+    const poses = estimateMultiplePosesOnImage(imageElement);
+
+    console.log(poses);
+</script>
+
+<img id = 'human' src="human1.png" />
+</body>
+</html>
