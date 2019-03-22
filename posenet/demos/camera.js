@@ -256,7 +256,7 @@ function detectPoseInRealTime(video, net) {
   let count = 0;
   let countFalse = 0;
   let countTrue = 0;
-  let keypointMessageSent = false;
+  // let keypointMessageSent = false;
 
   let partsIndex = {};
   let partNamesInOrder = [
@@ -305,6 +305,108 @@ function detectPoseInRealTime(video, net) {
     let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     return distance;
   }
+  function handleSinglePoseSlouch(pose) {
+    let keypoints = pose.keypoints;
+    console.log('score of left shoulder');
+    let leftShoulderScore = keypoints[partsIndex['leftShoulder']].score;
+    let rightShoulderScore = keypoints[partsIndex['rightShoulder']].score;
+    let leftEyeScore = keypoints[partsIndex['leftEye']].score;
+    let rightEyeScore = keypoints[partsIndex['rightEye']].score;
+    // console.log(leftShoulderScore);
+
+    if (
+      leftShoulderScore >= 0.5 &&
+      rightShoulderScore >= 0.5 &&
+      leftEyeScore >= 0.5 &&
+      rightEyeScore >= 0.5
+    ) {
+      // keypointMessageSent = false;
+      let distanceBetweenShoulders = computeDistanceBetweenParts(
+        keypoints,
+        'leftShoulder',
+        'rightShoulder'
+      );
+      let keypointMiddleEyes = computeMiddlePartsKeypoint(
+        keypoints,
+        'leftEye',
+        'rightEye'
+      );
+      let keypointMiddleShoulders = computeMiddlePartsKeypoint(
+        keypoints,
+        'leftShoulder',
+        'rightShoulder'
+      );
+      let distanceMiddleEyesShoulders = computeDistanceBetweenKeypoints(
+        keypointMiddleEyes,
+        keypointMiddleShoulders
+      );
+      let canonizedDistanceMiddleEyesShoulders =
+        distanceMiddleEyesShoulders / distanceBetweenShoulders;
+
+      console.log(`distanceBetweenShoulders ${distanceBetweenShoulders}`);
+      console.log(`keypointMiddleEyes ${keypointMiddleEyes}`);
+      console.log(`keypointMiddleShoulders ${keypointMiddleShoulders}`);
+      console.log(`distanceMiddleEyesShoulders ${distanceMiddleEyesShoulders}`);
+      console.log(`canonizedDistanceMiddleEyesShoulders ${canonizedDistanceMiddleEyesShoulders}`);
+
+      // Do the prediction
+      let isSlouching = canonizedDistanceMiddleEyesShoulders < 0.675;
+      const timeWindow = 30;
+      const timeThreshold = timeWindow * (2 / 3);
+
+      if (count < timeWindow) {
+        count++;
+      } else {
+        if (runningSum[0]) {
+          countTrue -= 1;
+        } else {
+          countFalse -= 1;
+        }
+        runningSum.shift();
+      }
+      let element = document.querySelector('#is-slouching');
+
+      if (isSlouching) {
+        countTrue++;
+        element.textContent = 'slouching';
+        element.classList.add('is-slouching');
+      } else {
+        countFalse++;
+        element.textContent = 'not slouching';
+        element.classList.remove('is-slouching');
+      }
+
+      runningSum.push(isSlouching);
+
+      if (countTrue > timeThreshold) {
+        console.log('STOP SLOUCHING');
+        bot.postMessageToUser(
+          userName,
+          'Stop slouching my friend!',
+          params
+        );
+
+        countFalse = 0;
+        countTrue = 0;
+        runningSum = [];
+        count = 0;
+      }
+      console.log(
+        'count',
+        count,
+        'countTrue',
+        countTrue,
+        'countFalse',
+        countFalse,
+        'isSlouching',
+        isSlouching
+      );
+    }
+    // else if (keypointMessageSent === false){
+    //   bot.postMessageToUser(userName, 'Not enough keypoints available', params);
+    //   keypointMessageSent = true;
+    // }
+  }
 
   async function poseDetectionFrame() {
     if (guiState.changeToArchitecture) {
@@ -338,103 +440,8 @@ function detectPoseInRealTime(video, net) {
           outputStride
         );
         poses.push(pose);
-        console.log('poses');
 
-        let keypoints = poses[0].keypoints;
-        console.log('score of left shoulder');
-        let leftShoulderScore = keypoints[partsIndex['leftShoulder']].score;
-        let rightShoulderScore = keypoints[partsIndex['rightShoulder']].score;
-        let leftEyeScore = keypoints[partsIndex['leftEye']].score;
-        let rightEyeScore = keypoints[partsIndex['rightEye']].score;
-        console.log(poses);
-        // console.log(leftShoulderScore);
-
-        if (
-          leftShoulderScore >= 0.5 &&
-          rightShoulderScore >= 0.5 &&
-          leftEyeScore >= 0.5 &&
-          rightEyeScore >= 0.5
-        ) {
-          // keypointMessageSent = false;
-          let distanceBetweenShoulders = computeDistanceBetweenParts(
-            keypoints,
-            'leftShoulder',
-            'rightShoulder'
-          );
-          let keypointMiddleEyes = computeMiddlePartsKeypoint(
-            keypoints,
-            'leftEye',
-            'rightEye'
-          );
-          let keypointMiddleShoulders = computeMiddlePartsKeypoint(
-            keypoints,
-            'leftShoulder',
-            'rightShoulder'
-          );
-          let distanceMiddleEyesShoulders = computeDistanceBetweenKeypoints(
-            keypointMiddleEyes,
-            keypointMiddleShoulders
-          );
-          let canonizedDistanceMiddleEyesShoulders =
-            distanceMiddleEyesShoulders / distanceBetweenShoulders;
-
-          // Do the prediction
-          let isSlouching = canonizedDistanceMiddleEyesShoulders < 0.675;
-          const timeWindow = 30;
-          const timeThreshold = timeWindow * (2 / 3);
-
-          if (count < timeWindow) {
-            count++;
-          } else {
-            if (runningSum[0]) {
-              countTrue -= 1;
-            } else {
-              countFalse -= 1;
-            }
-            runningSum.shift();
-          }
-          let element = document.querySelector('#is-slouching');
-
-          if (isSlouching) {
-            countTrue++;
-            element.textContent = 'slouching';
-            element.classList.add('is-slouching');
-          } else {
-            countFalse++;
-            element.textContent = 'not slouching';
-            element.classList.remove('is-slouching');
-          }
-
-          runningSum.push(isSlouching);
-
-          if (countTrue > timeThreshold) {
-            console.log('STOP SLOUCHING');
-            bot.postMessageToUser(
-              userName,
-              'Stop slouching my friend!',
-              params
-            );
-
-            countFalse = 0;
-            countTrue = 0;
-            runningSum = [];
-            count = 0;
-          }
-          console.log(
-            'count',
-            count,
-            'countTrue',
-            countTrue,
-            'countFalse',
-            countFalse,
-            'isSlouching',
-            isSlouching
-          );
-        }
-        // else if (keypointMessageSent === false){
-        //   bot.postMessageToUser(userName, 'Not enough keypoints available', params);
-        //   keypointMessageSent = true;
-        // }
+        handleSinglePoseSlouch(pose);
 
         minPoseConfidence = +guiState.singlePoseDetection.minPoseConfidence;
         minPartConfidence = +guiState.singlePoseDetection.minPartConfidence;
