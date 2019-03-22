@@ -24,23 +24,22 @@ let SlackBot = require('slackbots');
 
 let userName = localStorage.getItem('userName');
 
-
 console.log('User Name');
 console.log(userName);
 // create a bot
 let bot = new SlackBot({
   token: process.env.BOT_TOKEN, // Add a bot https://my.slack.com/services/new/bot and put the token
-  name: 'Slouchless Bot'
+  name: 'Slouchless Bot',
 });
 
 // bot.on('start', function() {
 //   // more information about additional params https://api.slack.com/methods/chat.postMessage
-  const params = {
-    icon_emoji: ':bow:'
-  };
+const params = {
+  icon_emoji: ':bow:',
+};
 
-  console.log('emoji');
-  console.log(bot);
+console.log('emoji');
+console.log(bot);
 //
 //   // define channel, where bot exist. You can adjust it there https://my.slack.com/services
 //   bot.postMessageToChannel('general', 'meow!', params);
@@ -55,7 +54,6 @@ let bot = new SlackBot({
 //   // define private group instead of 'private_group', where bot exist
 //   bot.postMessageToGroup('private_group', 'meow!', params);
 // });
-
 
 const videoWidth = 600;
 const videoHeight = 500;
@@ -80,7 +78,8 @@ function isMobile() {
 async function setupCamera() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     throw new Error(
-        'Browser API navigator.mediaDevices.getUserMedia not available');
+      'Browser API navigator.mediaDevices.getUserMedia not available'
+    );
   }
 
   const video = document.getElementById('video');
@@ -89,8 +88,8 @@ async function setupCamera() {
 
   const mobile = isMobile();
   const stream = await navigator.mediaDevices.getUserMedia({
-    'audio': false,
-    'video': {
+    audio: false,
+    video: {
       facingMode: 'user',
       width: mobile ? undefined : videoWidth,
       height: mobile ? undefined : videoHeight,
@@ -153,8 +152,10 @@ function setupGui(cameras, net) {
   // The single-pose algorithm is faster and simpler but requires only one
   // person to be in the frame or results will be innaccurate. Multi-pose works
   // for more than 1 person
-  const algorithmController =
-      gui.add(guiState, 'algorithm', ['single-pose', 'multi-pose']);
+  const algorithmController = gui.add(guiState, 'algorithm', [
+    'single-pose',
+    'multi-pose',
+  ]);
 
   // The input parameters have the most effect on accuracy and speed of the
   // network
@@ -163,8 +164,10 @@ function setupGui(cameras, net) {
   // accuracy. 1.01 is the largest, but will be the slowest. 0.50 is the
   // fastest, but least accurate.
   const architectureController = input.add(
-      guiState.input, 'mobileNetArchitecture',
-      ['1.01', '1.00', '0.75', '0.50']);
+    guiState.input,
+    'mobileNetArchitecture',
+    ['1.01', '1.00', '0.75', '0.50']
+  );
   // Output stride:  Internally, this parameter affects the height and width of
   // the layers in the neural network. The lower the value of the output stride
   // the higher the accuracy but slower the speed, the higher the value the
@@ -172,7 +175,10 @@ function setupGui(cameras, net) {
   input.add(guiState.input, 'outputStride', [8, 16, 32]);
   // Image scale factor: What to scale the image by before feeding it through
   // the network.
-  input.add(guiState.input, 'imageScaleFactor').min(0.2).max(1.0);
+  input
+    .add(guiState.input, 'imageScaleFactor')
+    .min(0.2)
+    .max(1.0);
   input.open();
 
   // Pose confidence: the overall confidence in the estimation of a person's
@@ -184,15 +190,19 @@ function setupGui(cameras, net) {
   single.add(guiState.singlePoseDetection, 'minPartConfidence', 0.0, 1.0);
 
   let multi = gui.addFolder('Multi Pose Detection');
-  multi.add(guiState.multiPoseDetection, 'maxPoseDetections')
-      .min(1)
-      .max(20)
-      .step(1);
+  multi
+    .add(guiState.multiPoseDetection, 'maxPoseDetections')
+    .min(1)
+    .max(20)
+    .step(1);
   multi.add(guiState.multiPoseDetection, 'minPoseConfidence', 0.0, 1.0);
   multi.add(guiState.multiPoseDetection, 'minPartConfidence', 0.0, 1.0);
   // nms Radius: controls the minimum distance between poses that are returned
   // defaults to 20, which is probably fine for most use cases
-  multi.add(guiState.multiPoseDetection, 'nmsRadius').min(0.0).max(40.0);
+  multi
+    .add(guiState.multiPoseDetection, 'nmsRadius')
+    .min(0.0)
+    .max(40.0);
   multi.open();
 
   let output = gui.addFolder('Output');
@@ -201,7 +211,6 @@ function setupGui(cameras, net) {
   output.add(guiState.output, 'showPoints');
   output.add(guiState.output, 'showBoundingBox');
   output.open();
-
 
   architectureController.onChange(function(architecture) {
     guiState.changeToArchitecture = architecture;
@@ -225,7 +234,7 @@ function setupGui(cameras, net) {
  * Sets up a frames per second panel on the top-left of the window
  */
 function setupFPS() {
-  stats.showPanel(0);  // 0: fps, 1: ms, 2: mb, 3+: custom
+  stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
 }
 
@@ -250,35 +259,51 @@ function detectPoseInRealTime(video, net) {
   let keypointMessageSent = false;
 
   let partsIndex = {};
-  let partNamesInOrder = ["nose", "leftEye", "rightEye", "leftEar", "rightEar", "leftShoulder", "rightShoulder",
-    "leftElbow", "rightElbow", "leftWrist", "rightWrist", "leftHip", "rightHip",
-    "leftKnee", "rightKnee", "leftAnkle", "rightAnkle"];
+  let partNamesInOrder = [
+    'nose',
+    'leftEye',
+    'rightEye',
+    'leftEar',
+    'rightEar',
+    'leftShoulder',
+    'rightShoulder',
+    'leftElbow',
+    'rightElbow',
+    'leftWrist',
+    'rightWrist',
+    'leftHip',
+    'rightHip',
+    'leftKnee',
+    'rightKnee',
+    'leftAnkle',
+    'rightAnkle',
+  ];
   partNamesInOrder.forEach((partName, index) => {
     partsIndex[partName] = index;
   });
-  function computeMiddlePartsKeypoint(keypoints, partNameA, partNameB){
+  function computeMiddlePartsKeypoint(keypoints, partNameA, partNameB) {
     let keypointA = keypoints[partsIndex[partNameA]];
     let keypointB = keypoints[partsIndex[partNameB]];
     console.assert(keypointA.part === partNameA);
     console.assert(keypointB.part === partNameB);
     let keypoint = {
-      position : {
-        x: (keypointA.position.x + keypointB.position.x)/2,
-        y: (keypointA.position.y + keypointB.position.y)/2,
-      }
+      position: {
+        x: (keypointA.position.x + keypointB.position.x) / 2,
+        y: (keypointA.position.y + keypointB.position.y) / 2,
+      },
     };
-    return keypoint
+    return keypoint;
   }
-  function computeDistanceBetweenParts(keypoints, partNameA, partNameB){
+  function computeDistanceBetweenParts(keypoints, partNameA, partNameB) {
     let keypointA = keypoints[partsIndex[partNameA]];
     let keypointB = keypoints[partsIndex[partNameB]];
-    return computeDistanceBetweenKeypoints(keypointA, keypointB)
+    return computeDistanceBetweenKeypoints(keypointA, keypointB);
   }
-  function computeDistanceBetweenKeypoints(keypointA, keypointB){
+  function computeDistanceBetweenKeypoints(keypointA, keypointB) {
     let deltaX = keypointA.position.x - keypointB.position.x;
     let deltaY = keypointA.position.y - keypointB.position.y;
-    let distance = Math.sqrt( deltaX*deltaX + deltaY*deltaY);
-    return distance
+    let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    return distance;
   }
 
   async function poseDetectionFrame() {
@@ -307,27 +332,51 @@ function detectPoseInRealTime(video, net) {
     switch (guiState.algorithm) {
       case 'single-pose':
         const pose = await guiState.net.estimateSinglePose(
-            video, imageScaleFactor, flipHorizontal, outputStride);
+          video,
+          imageScaleFactor,
+          flipHorizontal,
+          outputStride
+        );
         poses.push(pose);
         console.log('poses');
 
         let keypoints = poses[0].keypoints;
         console.log('score of left shoulder');
-        let leftShoulderScore =  keypoints[partsIndex['leftShoulder']].score;
-        let rightShoulderScore =  keypoints[partsIndex['rightShoulder']].score;
-        let leftEyeScore =  keypoints[partsIndex['leftEye']].score;
-        let rightEyeScore =  keypoints[partsIndex['rightEye']].score;
+        let leftShoulderScore = keypoints[partsIndex['leftShoulder']].score;
+        let rightShoulderScore = keypoints[partsIndex['rightShoulder']].score;
+        let leftEyeScore = keypoints[partsIndex['leftEye']].score;
+        let rightEyeScore = keypoints[partsIndex['rightEye']].score;
         console.log(poses);
         // console.log(leftShoulderScore);
 
-
-        if (leftShoulderScore >= 0.5 && rightShoulderScore >= 0.5 && leftEyeScore >= 0.5 && rightEyeScore >= 0.5) {
+        if (
+          leftShoulderScore >= 0.5 &&
+          rightShoulderScore >= 0.5 &&
+          leftEyeScore >= 0.5 &&
+          rightEyeScore >= 0.5
+        ) {
           // keypointMessageSent = false;
-          let distanceBetweenShoulders = computeDistanceBetweenParts(keypoints, 'leftShoulder', 'rightShoulder')
-          let keypointMiddleEyes = computeMiddlePartsKeypoint(keypoints, 'leftEye', 'rightEye')
-          let keypointMiddleShoulders = computeMiddlePartsKeypoint(keypoints, 'leftShoulder', 'rightShoulder')
-          let distanceMiddleEyesShoulders = computeDistanceBetweenKeypoints(keypointMiddleEyes, keypointMiddleShoulders)
-          let canonizedDistanceMiddleEyesShoulders = distanceMiddleEyesShoulders / distanceBetweenShoulders
+          let distanceBetweenShoulders = computeDistanceBetweenParts(
+            keypoints,
+            'leftShoulder',
+            'rightShoulder'
+          );
+          let keypointMiddleEyes = computeMiddlePartsKeypoint(
+            keypoints,
+            'leftEye',
+            'rightEye'
+          );
+          let keypointMiddleShoulders = computeMiddlePartsKeypoint(
+            keypoints,
+            'leftShoulder',
+            'rightShoulder'
+          );
+          let distanceMiddleEyesShoulders = computeDistanceBetweenKeypoints(
+            keypointMiddleEyes,
+            keypointMiddleShoulders
+          );
+          let canonizedDistanceMiddleEyesShoulders =
+            distanceMiddleEyesShoulders / distanceBetweenShoulders;
 
           // Do the prediction
           let isSlouching = canonizedDistanceMiddleEyesShoulders < 0.675;
@@ -360,14 +409,27 @@ function detectPoseInRealTime(video, net) {
 
           if (countTrue > timeThreshold) {
             console.log('STOP SLOUCHING');
-            bot.postMessageToUser(userName, 'Stop slouching my friend!', params);
+            bot.postMessageToUser(
+              userName,
+              'Stop slouching my friend!',
+              params
+            );
 
             countFalse = 0;
             countTrue = 0;
             runningSum = [];
-            count = 0
+            count = 0;
           }
-          console.log('count', count, 'countTrue', countTrue, 'countFalse', countFalse, 'isSlouching', isSlouching);
+          console.log(
+            'count',
+            count,
+            'countTrue',
+            countTrue,
+            'countFalse',
+            countFalse,
+            'isSlouching',
+            isSlouching
+          );
         }
         // else if (keypointMessageSent === false){
         //   bot.postMessageToUser(userName, 'Not enough keypoints available', params);
@@ -379,10 +441,14 @@ function detectPoseInRealTime(video, net) {
         break;
       case 'multi-pose':
         poses = await guiState.net.estimateMultiplePoses(
-            video, imageScaleFactor, flipHorizontal, outputStride,
-            guiState.multiPoseDetection.maxPoseDetections,
-            guiState.multiPoseDetection.minPartConfidence,
-            guiState.multiPoseDetection.nmsRadius);
+          video,
+          imageScaleFactor,
+          flipHorizontal,
+          outputStride,
+          guiState.multiPoseDetection.maxPoseDetections,
+          guiState.multiPoseDetection.minPartConfidence,
+          guiState.multiPoseDetection.nmsRadius
+        );
         minPoseConfidence = +guiState.multiPoseDetection.minPoseConfidence;
         minPartConfidence = +guiState.multiPoseDetection.minPartConfidence;
         break;
@@ -424,7 +490,6 @@ function detectPoseInRealTime(video, net) {
   poseDetectionFrame();
 }
 
-
 /**
  * Kicks off the demo by loading the posenet model, finding and loading
  * available camera devices, and setting off the detectPoseInRealTime function.
@@ -442,8 +507,9 @@ export async function bindPage() {
     video = await loadVideo();
   } catch (e) {
     let info = document.getElementById('info');
-    info.textContent = 'this browser does not support video capture,' +
-        'or this device does not have a camera';
+    info.textContent =
+      'this browser does not support video capture,' +
+      'or this device does not have a camera';
     info.style.display = 'block';
     throw e;
   }
@@ -453,7 +519,9 @@ export async function bindPage() {
   detectPoseInRealTime(video, net);
 }
 
-navigator.getUserMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+navigator.getUserMedia =
+  navigator.getUserMedia ||
+  navigator.webkitGetUserMedia ||
+  navigator.mozGetUserMedia;
 // kick off the demo
 bindPage();
