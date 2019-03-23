@@ -305,6 +305,11 @@ function detectPoseInRealTime(video, net) {
     let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     return distance;
   }
+
+  function computeVerticalDistanceBetweenKeypoints(keypointA, keypointB) {
+    return Math.abs(keypointA.position.y - keypointB.position.y);
+  }
+
   function handleSinglePoseSlouch(pose) {
     let keypoints = pose.keypoints;
     console.log('score of left shoulder');
@@ -336,18 +341,65 @@ function detectPoseInRealTime(video, net) {
         'leftShoulder',
         'rightShoulder'
       );
-      let distanceMiddleEyesShoulders = computeDistanceBetweenKeypoints(
+      let distanceMiddleEyesShoulders = computeVerticalDistanceBetweenKeypoints(
         keypointMiddleEyes,
         keypointMiddleShoulders
       );
       let canonizedDistanceMiddleEyesShoulders =
         distanceMiddleEyesShoulders / distanceBetweenShoulders;
 
+      let verticalDistanceNoseMiddleShoulders = computeVerticalDistanceBetweenKeypoints(
+        keypoints[partsIndex['nose']],
+        keypointMiddleShoulders
+      );
+      let canonizedDistanceNoseMiddleShoulders =
+        verticalDistanceNoseMiddleShoulders / distanceBetweenShoulders;
+
+      let verticalDistanceNoseLeftShoulder = computeVerticalDistanceBetweenKeypoints(
+        keypoints[partsIndex['nose']],
+        keypoints[partsIndex['leftShoulder']]
+      );
+
+      let verticalDistanceNoseRightShoulder = computeVerticalDistanceBetweenKeypoints(
+        keypoints[partsIndex['nose']],
+        keypoints[partsIndex['rightShoulder']]
+      );
+
+      let verticalDistanceMiddleEyesLeftShoulder = computeVerticalDistanceBetweenKeypoints(
+        keypoints[partsIndex['nose']],
+        keypoints[partsIndex['leftShoulder']]
+      );
+
+      let verticalDistanceMiddleEyesRightShoulder = computeVerticalDistanceBetweenKeypoints(
+        keypoints[partsIndex['nose']],
+        keypoints[partsIndex['rightShoulder']]
+      );
+
+      let canonizedVerticalDistanceNoseLeftShoulder = verticalDistanceNoseLeftShoulder / distanceBetweenShoulders;
+      let canonizedVerticalDistanceNoseRightShoulder = verticalDistanceNoseRightShoulder / distanceBetweenShoulders;
+
+
       console.log(`distanceBetweenShoulders ${distanceBetweenShoulders}`);
-      console.log(`keypointMiddleEyes ${keypointMiddleEyes}`);
-      console.log(`keypointMiddleShoulders ${keypointMiddleShoulders}`);
       console.log(`distanceMiddleEyesShoulders ${distanceMiddleEyesShoulders}`);
       console.log(`canonizedDistanceMiddleEyesShoulders ${canonizedDistanceMiddleEyesShoulders}`);
+      console.log(`canonizedDistanceNoseMiddleShoulders ${canonizedDistanceNoseMiddleShoulders}`);
+      console.log(`canonizedVerticalDistanceNoseLeftShoulder ${canonizedVerticalDistanceNoseLeftShoulder}`);
+      console.log(`canonizedVerticalDistanceNoseRightShoulder ${canonizedVerticalDistanceNoseRightShoulder}`);
+
+      let canonizedDistanceNoseHigherShoulder = Math.min(
+        canonizedVerticalDistanceNoseLeftShoulder,
+        canonizedVerticalDistanceNoseRightShoulder
+      );
+
+      let canonizedDistanceMiddleEyesHigherShoulder = Math.min(
+        verticalDistanceMiddleEyesLeftShoulder / distanceBetweenShoulders,
+        verticalDistanceMiddleEyesRightShoulder / distanceBetweenShoulders
+      );
+
+      console.log(`canonizedDistanceNoseHigherShoulder ${canonizedDistanceNoseHigherShoulder}`);
+      console.log(`canonizedDistanceMiddleEyesHigherShoulder ${canonizedDistanceMiddleEyesHigherShoulder}`);
+
+      // let isSlouching = canonizedDistanceNoseHigherShoulder < 0.55; // if camera not facing face directly
 
       // Do the prediction
       let isSlouching = canonizedDistanceMiddleEyesShoulders < 0.675;
